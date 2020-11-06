@@ -29,7 +29,14 @@ function LoggedIn() {
   const [dataFromServer, setDataFromServer] = useState("Loading...")
 
   useEffect(() => {
-    facade.fetchData().then(data => setDataFromServer(data.msg));
+    facade.fetchData().then(data => setDataFromServer(data.msg))
+    .catch(err => {
+      if(err.status) {
+        err.fullError.then(e => console.log("HTTP Fejl"))
+      } else {
+        console.log("Network Error");
+      }
+    })
   }, [])
 
   return (
@@ -43,6 +50,7 @@ function LoggedIn() {
 
 function App() {
   const [loggedIn, setLoggedIn] = useState(false)
+  const [error, setError] = useState('');
 
   const logout = () => {
     facade.logout()
@@ -50,7 +58,14 @@ function App() {
   }
   const login = (user, pass) => {
     facade.login(user, pass)
-      .then(res => setLoggedIn(true));
+      .then(res => {
+        setLoggedIn(true)
+        setError('');
+      })
+      .catch(err => {
+        setError("Couldn't log you in, see error in console for further information");
+        console.log(err);
+      })
   }
 
   return (
@@ -60,6 +75,8 @@ function App() {
           <LoggedIn />
           <button onClick={logout}>Logout</button>
         </div>)}
+
+        {error}
     </div>
   )
 
